@@ -1,3 +1,4 @@
+
 // this function takes the question object returned by the StackOverflow request
 // and returns new result to be appended to DOM
 var showQuestion = function(question) {
@@ -27,6 +28,35 @@ var showQuestion = function(question) {
 		'</a></p>' +
 		'<p>Reputation: ' + question.owner.reputation + '</p>'
 	);
+
+	return result;
+};
+
+var showTopAnswerers = function(answerer) {
+	// clone our result template code
+	var result = $('.templates .answerers').clone();
+	// console.log(answerer);
+
+	// set the avatar properties in result
+	var avatarElem = result.find('.avatar');
+	avatarElem.attr('src',answerer.user.profile_image);
+
+	// set the answerer properties in result
+	var answererElem = result.find('.top-answerer a');
+	answererElem.attr('href', answerer.user.link);
+	answererElem.text(answerer.user.display_name);
+
+	// set the reputation properties in result
+	var reputationElem = result.find('.reputation');
+	reputationElem.text(answerer.user.reputation);
+
+	// set the score properties in result
+	var scoreElem = result.find('.score');
+	scoreElem.text(answerer.score);
+
+	// set the post-count properties in result
+	var postCountElem = result.find('.post-count');
+	postCountElem.text(answerer.post_count);
 
 	return result;
 };
@@ -81,63 +111,6 @@ var getUnanswered = function(tags) {
 	});
 };
 
-
-$(document).ready( function() {
-	$('.unanswered-getter').submit( function(e){
-		e.preventDefault();
-		// zero out results if previous search has run
-		$('.results').html('');
-		// get the value of the tags the user submitted
-		var tags = $(this).find("input[name='tags']").val();
-		getUnanswered(tags);
-	});
-}); //end of unanswered questions
-
-/*---start of showTopAnswerers section 2---*/
-//create a separate object for Top Answerers (var showAnswers)
-//type in a keyword in View the Top Answerers for a Tag
-var showTopAnswerers = function(answerer) {
-	// clone our result template code
-	var resultAnswerers = $('.templates .answerers').clone();
-	console.log(answerer);
-	// set the answerer properties in result
-	var answererElem = result.find('.top-answerer a');
-	answererElem.attr('href', answerer.link);
-	answererElem.text(answerer.user.display_name);
-
-	// set the reputation properties in result
-	var reputationElem = result.find('.reputation');
-	reputation.text(answerer.reputation);
-
-	// set the score properties in result
-	var scoreElem = result.find('.score');
-	score.text(answerer.score);
-
-	// set user link properties in result
-	var answererLink = result.find('.answerer-link');
-	answerer-link.html('<p>Link to Answerer Profile: <a target="_blank" '+
-		'href=http://stackoverflow.com/users/' + answerer.user.link + '>' +
-		'</a></p>' 
-	);
-
-	return result;
-	console.log(result);
-};
-
-// this function takes the results object from StackOverflow
-// and returns the number of results and tags to be appended to DOM
-var showAnswererResults = function(query, resultNum) {
-	var results = resultNum + ' results for <strong>' + query + '</strong>';
-	return results;
-};
-
-// takes error string and turns it into displayable DOM element
-var showError = function(error){
-	var errorElem = $('.templates .error').clone();
-	var errorText = '<p>' + error + '</p>';
-	errorElem.append(errorText);
-};
-
 // takes a string of semi-colon separated tags to be searched
 // for on StackOverflow
 var getAnswerers = function(tags) {
@@ -148,13 +121,13 @@ var getAnswerers = function(tags) {
 	};
 	
 	$.ajax({
-		url: "https://api.stackexchange.com/2.2/' + tags + '/tag/top-answerers/all_time",
+		url: "https://api.stackexchange.com/2.2/tags/" + tags + "/top-answerers/all_time",
 		data: request,
 		dataType: "jsonp",//use jsonp to avoid cross origin issues
 		type: "GET",
 	})
 	.done(function(result){ //this waits for the ajax to return with a succesful promise object
-		var answererResults = showAnswererResults(result.items.length);
+		var answererResults = showSearchResults(tags,result.items.length);
 
 		$('.search-results').html(answererResults);
 		//$.each is a higher order function. It takes an array and a function as an argument.
@@ -166,19 +139,28 @@ var getAnswerers = function(tags) {
 	})
 	.fail(function(jqXHR, error){ //this waits for the ajax to return with an error promise object
 		var errorElem = showError(error);
-		$('.answerer-results').append(errorElem);
+		$('.results').append(errorElem);
 	});
 };
 
 
 $(document).ready( function() {
+	$('.unanswered-getter').submit( function(e){
+		e.preventDefault();
+		// zero out results if previous search has run
+		$('.results').html('');
+		// get the value of the tags the user submitted
+		var tags = $(this).find("input[name='tags']").val();
+		getUnanswered(tags);
+	});
+
 	$('.inspiration-getter').submit( function(e){
 		e.preventDefault();
 		// zero out results if previous search has run
-		$('.answerer-results').html('');
+		$('.results').html('');
 		// get the value of the tags the user submitted
-		var tags = $(this).find("input[name='tags']").val();
+		var tags = $(this).find("input[name='answerers']").val();
 		getAnswerers(tags);
 	});
-}); //end of showTopAnswerers section 2
+}); //end of unanswered questions
 
