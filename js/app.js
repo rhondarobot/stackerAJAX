@@ -97,10 +97,9 @@ $(document).ready( function() {
 //create a separate object for Top Answerers (var showAnswers)
 //type in a keyword in View the Top Answerers for a Tag
 var showTopAnswerers = function(answerer) {
-	console.log(answerer);
 	// clone our result template code
-	var result = $('.templates .answerer').clone();
-	
+	var resultAnswerers = $('.templates .answerers').clone();
+	console.log(answerer);
 	// set the answerer properties in result
 	var answererElem = result.find('.top-answerer a');
 	answererElem.attr('href', answerer.link);
@@ -149,7 +148,7 @@ var getAnswerers = function(tags) {
 	};
 	
 	$.ajax({
-		url: "https://api.stackexchange.com/2.2/' + tags +'/tag/top-answerers/all_time",
+		url: "https://api.stackexchange.com/2.2/' + tags + '/tag/top-answerers/all_time",
 		data: request,
 		dataType: "jsonp",//use jsonp to avoid cross origin issues
 		type: "GET",
@@ -161,8 +160,8 @@ var getAnswerers = function(tags) {
 		//$.each is a higher order function. It takes an array and a function as an argument.
 		//The function is executed once for each item in the array.
 		$.each(result.items, function(i, item) {
-			var question = showQuestion(item);
-			$('.answerer').append(question);
+			var answerer = showTopAnswerers(item);
+			$('.results').append(answerer);
 		});
 	})
 	.fail(function(jqXHR, error){ //this waits for the ajax to return with an error promise object
